@@ -14,8 +14,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DispatchersModule {
-    @Provides @Named("io") fun io(): CoroutineDispatcher = Dispatchers.IO
-    @Provides @Named("default") fun default(): CoroutineDispatcher = Dispatchers.Default
+    @Provides @Named("io") fun ioDispatcher(): CoroutineDispatcher = Dispatchers.IO
+    @Provides @Named("default") fun defaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
 
     /** Application-wide scope for work that must outlive a screen (e.g. temp-file cleanup). */
     @Provides @Singleton @Named("app")
