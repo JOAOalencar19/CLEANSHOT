@@ -77,6 +77,9 @@ fun CleanerScreen(onBack: () -> Unit, onDone: (String) -> Unit, viewModel: Clean
                     contentPadding = PaddingValues(bottom = 140.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    if (state.countsByTarget.isEmpty()) item {
+                        NothingPersonalCard(state.plan, Modifier.widthIn(max = 720.dp))
+                    }
                     item {
                         Row(Modifier.widthIn(max = 720.dp).fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                             SecondaryButton("Essencial", { viewModel.preset(CleaningOptions.DEFAULT) }, Modifier.weight(1f))
@@ -114,7 +117,11 @@ fun CleanerScreen(onBack: () -> Unit, onDone: (String) -> Unit, viewModel: Clean
                 BottomActionBar(Modifier.align(Alignment.BottomCenter).navigationBarsPadding()) {
                     val plan = state.plan
                     PrimaryButton(
-                        text = if (plan?.canProceed == true) "Revisar e limpar (${plan.toRemove.size})" else "Nada para remover",
+                        text = when {
+                            plan?.canProceed == true -> "Revisar e limpar (${plan.toRemove.size})"
+                            state.countsByTarget.isEmpty() -> "Nenhum dado pessoal encontrado"
+                            else -> "Ative um grupo encontrado"
+                        },
                         onClick = viewModel::requestConfirmation,
                         modifier = Modifier.widthIn(max = 720.dp).fillMaxWidth().align(Alignment.Center),
                         icon = Icons.Rounded.CleaningServices,
@@ -134,6 +141,33 @@ fun CleanerScreen(onBack: () -> Unit, onDone: (String) -> Unit, viewModel: Clean
             title = { Text("Operação interrompida") },
             text = { Text("$msg\n\nNenhum arquivo foi gerado e o original permanece intacto.") },
         )
+    }
+}
+
+/** Explains why there is nothing to clean (e.g. AI-generated images carry no personal metadata). */
+@Composable
+private fun NothingPersonalCard(plan: CleaningPlan?, modifier: Modifier) {
+    val c = CleanShotTheme.colors
+    val provenance = plan?.protected.orEmpty().filter { it.removal == com.cleanshot.domain.model.RemovalPolicy.PROTECTED_PROVENANCE }
+    GlassCard(modifier.fillMaxWidth(), tint = c.success.copy(alpha = 0.07f)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.CheckCircle, null, tint = c.success)
+            Spacer(Modifier.width(Spacing.xs))
+            Text("Nenhum dado pessoal encontrado", style = MaterialTheme.typography.titleMedium, color = c.textPrimary)
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "Esta imagem não contém localização, autoria, dados do aparelho ou outros metadados pessoais que possam ser removidos.",
+            style = MaterialTheme.typography.bodySmall, color = c.textSecondary,
+        )
+        if (provenance.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(
+                "Ela contém informações de procedência (${provenance.size}), como credenciais C2PA ou declarações de geração por IA. " +
+                    "Elas descrevem como a imagem foi criada, não identificam você, e são sempre preservadas.",
+                style = MaterialTheme.typography.bodySmall, color = c.textSecondary,
+            )
+        }
     }
 }
 
