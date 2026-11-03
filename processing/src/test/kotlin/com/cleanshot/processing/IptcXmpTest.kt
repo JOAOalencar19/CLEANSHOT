@@ -78,6 +78,15 @@ class IptcXmpTest {
         assertNotNull(keys.firstOrNull { it == "XMP:dc:creator" })
     }
 
+    @Test fun externalEntitiesAreNeverResolved() {
+        val secret = java.io.File.createTempFile("secret", ".txt").apply { writeText("TOP-SECRET") }
+        val xxe = """<?xml version="1.0"?><!DOCTYPE x [<!ENTITY e SYSTEM "${secret.toURI()}">]>
+            <x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+            <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:format>&e;</dc:format></rdf:Description></rdf:RDF></x:xmpmeta>""".toByteArray()
+        val leaked = runCatching { XmpProcessor().properties(xxe) }.getOrNull()?.any { it.value.contains("TOP-SECRET") } ?: false
+        assertFalse(leaked)
+    }
+
     @Test fun malformedXmpIsRejected() {
         val out = ByteArrayOutputStream().apply { write("<x:xmpmeta><rdf:RDF".toByteArray()) }.toByteArray()
         try { XmpProcessor().properties(out); throw AssertionError("expected failure") } catch (e: Exception) {

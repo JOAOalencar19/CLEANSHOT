@@ -111,7 +111,8 @@ class XmpProcessor {
         val factory = DocumentBuilderFactory.newInstance().apply {
             isNamespaceAware = true
             isExpandEntityReferences = false
-            isXIncludeAware = false
+            // Android's parser throws UnsupportedOperationException for XInclude configuration.
+            try { isXIncludeAware = false } catch (_: UnsupportedOperationException) { }
             trySetFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
             trySetFeature("http://xml.org/sax/features/external-general-entities", false)
             trySetFeature("http://xml.org/sax/features/external-parameter-entities", false)
