@@ -1,4 +1,4 @@
-package com.cleanshot.processing.cleaner
+package com.cleanshot.domain.util
 
 import com.cleanshot.domain.model.ImageFormat
 

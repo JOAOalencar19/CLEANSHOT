@@ -1,7 +1,7 @@
 package com.cleanshot.processing
 
 import com.cleanshot.domain.model.ImageFormat
-import com.cleanshot.processing.cleaner.OutputNaming
+import com.cleanshot.domain.util.OutputNaming
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

@@ -13,6 +13,8 @@ data class ImportedImage(
     val format: ImageFormat,
     val width: Int?,
     val height: Int?,
+    /** Quick hint from a lightweight EXIF read (full analysis is done later). */
+    val hasLocationHint: Boolean? = null,
 )
 
 enum class BatchItemState { QUEUED, RUNNING, SUCCEEDED, FAILED, CANCELLED, SKIPPED }
